@@ -4,9 +4,9 @@ python run.py \
     --model_name_or_path=microsoft/codebert-base \
     --do_eval \
     --do_test \
-    --train_data_file=../dataset/train.jsonl \
-    --eval_data_file=../dataset/valid.jsonl \
-    --test_data_file=../dataset/test.jsonl \
+    --train_data_file=../dataset/train.json \
+    --eval_data_file=../dataset/valid.json \
+    --test_data_file=../dataset/test.json \
     --num_train_epochs 1 \
     --block_size 64 \
     --train_batch_size 8 \

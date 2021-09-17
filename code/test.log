@@ -1,0 +1,27 @@
+09/15/2021 16:31:08 - WARNING - __main__ -   device: cpu, n_gpu: 0
+Some weights of the model checkpoint at microsoft/codebert-base were not used when initializing RobertaForSequenceClassification: ['pooler.dense.bias', 'pooler.dense.weight']
+- This IS expected if you are initializing RobertaForSequenceClassification from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing RobertaForSequenceClassification from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+Some weights of RobertaForSequenceClassification were not initialized from the model checkpoint at microsoft/codebert-base and are newly initialized: ['classifier.dense.bias', 'classifier.out_proj.bias', 'classifier.out_proj.weight', 'classifier.dense.weight']
+You should probably TRAIN this model on a down-stream task to be able to use it for predictions and inference.
+09/15/2021 16:31:20 - INFO - __main__ -   Training/evaluation parameters Namespace(adam_epsilon=1e-08, block_size=64, device=device(type='cpu'), do_eval=True, do_test=True, do_train=False, eval_batch_size=16, eval_data_file='../dataset/valid.jsonl', learning_rate=2e-05, max_grad_norm=1.0, model_name_or_path='microsoft/codebert-base', n_gpu=0, num_train_epochs=1, output_dir='./saved_models', seed=123456, test_data_file='../dataset/test.jsonl', tokenizer_name='microsoft/codebert-base', train_batch_size=8, train_data_file='../dataset/train.jsonl', warmup_steps=0, weight_decay=0.0)
+Traceback (most recent call last):
+  File "run.py", line 487, in <module>
+    main()
+  File "run.py", line 469, in main
+    model.load_state_dict(torch.load(output_dir))
+  File "/Users/happy/Develop/Environment/MiniConda3/envs/py37/lib/python3.7/site-packages/torch/serialization.py", line 592, in load
+    return _load(opened_zipfile, map_location, pickle_module, **pickle_load_args)
+  File "/Users/happy/Develop/Environment/MiniConda3/envs/py37/lib/python3.7/site-packages/torch/serialization.py", line 851, in _load
+    result = unpickler.load()
+  File "/Users/happy/Develop/Environment/MiniConda3/envs/py37/lib/python3.7/site-packages/torch/serialization.py", line 843, in persistent_load
+    load_tensor(data_type, size, key, _maybe_decode_ascii(location))
+  File "/Users/happy/Develop/Environment/MiniConda3/envs/py37/lib/python3.7/site-packages/torch/serialization.py", line 832, in load_tensor
+    loaded_storages[key] = restore_location(storage, location)
+  File "/Users/happy/Develop/Environment/MiniConda3/envs/py37/lib/python3.7/site-packages/torch/serialization.py", line 175, in default_restore_location
+    result = fn(storage, location)
+  File "/Users/happy/Develop/Environment/MiniConda3/envs/py37/lib/python3.7/site-packages/torch/serialization.py", line 151, in _cuda_deserialize
+    device = validate_cuda_device(location)
+  File "/Users/happy/Develop/Environment/MiniConda3/envs/py37/lib/python3.7/site-packages/torch/serialization.py", line 135, in validate_cuda_device
+    raise RuntimeError('Attempting to deserialize object on a CUDA '
+RuntimeError: Attempting to deserialize object on a CUDA device but torch.cuda.is_available() is False. If you are running on a CPU-only machine, please use torch.load with map_location=torch.device('cpu') to map your storages to the CPU.

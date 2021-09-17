@@ -3,9 +3,9 @@ python run.py \
     --tokenizer_name=microsoft/codebert-base \
     --model_name_or_path=microsoft/codebert-base \
     --do_train \
-    --train_data_file=../dataset/train.jsonl \
-    --eval_data_file=../dataset/valid.jsonl \
-    --test_data_file=../dataset/test.jsonl \
+    --train_data_file=../dataset/train.json \
+    --eval_data_file=../dataset/valid.json \
+    --test_data_file=../dataset/test.json \
     --num_train_epochs 5 \
     --block_size 512 \
     --train_batch_size 8 \

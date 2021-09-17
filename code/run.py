@@ -117,12 +117,17 @@ def convert_examples_to_features(js, tokenizer, args):
 
 
 class TextDataset(Dataset):
-    def __init__(self, tokenizer, args, file_path=None):
+    def __init__(self, tokenizer, args, file_path=None, label=None):
         self.examples = []
         json_file = open(file_path, 'r', encoding='utf-8')
         json_data = json.loads(json_file.read())
         for js in json_data:
-            self.examples.append(convert_examples_to_features(js, tokenizer, args))
+            if label is None:
+                self.examples.append(convert_examples_to_features(js, tokenizer, args))
+            elif label == 0 and js["label"] == 0:
+                self.examples.append(convert_examples_to_features(js, tokenizer, args))
+            elif label == 1 and js["label"] == 1:
+                self.examples.append(convert_examples_to_features(js, tokenizer, args))
         if "train" in file_path:
             for idx, example in enumerate(self.examples[:3]):
                 logger.info("*** Example ***")
@@ -296,9 +301,9 @@ def evaluate(args, model, tokenizer):
     return result
 
 
-def test(args, model, tokenizer):
+def test(args, model, tokenizer, label=None):
     # Note that DistributedSampler samples randomly
-    eval_dataset = TextDataset(tokenizer, args, args.test_data_file)
+    eval_dataset = TextDataset(tokenizer, args, args.test_data_file, label)
     eval_sampler = SequentialSampler(eval_dataset)
     eval_dataloader = DataLoader(
         eval_dataset, sampler=eval_sampler, batch_size=args.eval_batch_size
@@ -325,8 +330,8 @@ def test(args, model, tokenizer):
     labels = np.concatenate(labels, 0)
     preds = logits.argmax(-1)
     with open(os.path.join(args.output_dir, "predictions.txt"), "w") as f:
-        for example, pred in zip(eval_dataset.examples, preds):
-            f.write(str(example) + " " + str(pred) + "\n")
+        for label, pred in zip(labels, preds):
+            f.write(str(label) + " " + str(pred) + "\n")
     eval_acc = np.mean(labels == preds)
     result = {
         "eval_acc": round(eval_acc, 4),
@@ -473,14 +478,14 @@ def main():
         checkpoint_prefix = "checkpoint-best-acc/model.bin"
         output_dir = os.path.join(args.output_dir, "{}".format(checkpoint_prefix))
         state_dict = torch.load(output_dir)
-        new_state_dict = OrderedDict()
-        for k, v in state_dict.items():
-            if 'module' not in k:
-                k = 'module.'+k
-            else:
-                k = k.replace('features.module.', 'module.features.')
-            new_state_dict[k]=v
-        model.load_state_dict(new_state_dict)
+        # new_state_dict = OrderedDict()
+        # for k, v in state_dict.items():
+        #     if 'module' not in k:
+        #         k = 'module.'+k
+        #     else:
+        #         k = k.replace('features.module.', 'module.features.')
+        #     new_state_dict[k]=v
+        model.load_state_dict(state_dict)
         model.to(args.device)
         result = evaluate(args, model, tokenizer)
         logger.info("***** Eval results *****")
@@ -491,19 +496,31 @@ def main():
         checkpoint_prefix = "checkpoint-best-acc/model.bin"
         output_dir = os.path.join(args.output_dir, "{}".format(checkpoint_prefix))
         state_dict = torch.load(output_dir)
-        new_state_dict = OrderedDict()
-        for k, v in state_dict.items():
-            if 'module' not in k:
-                k = 'module.'+k
-            else:
-                k = k.replace('features.module.', 'module.features.')
-            new_state_dict[k]=v
-        model.load_state_dict(new_state_dict)
+        # new_state_dict = OrderedDict()
+        # for k, v in state_dict.items():
+        #     if 'module' not in k:
+        #         k = 'module.'+k
+        #     else:
+        #         k = k.replace('features.module.', 'module.features.')
+        #     new_state_dict[k]=v
+        model.load_state_dict(state_dict)
         model.to(args.device)
-        result = test(args, model, tokenizer)
-        logger.info("***** Eval results *****")
+        
+        logger.info("***** Consistent results *****")
+        result = test(args, model, tokenizer, 1)
         for key in sorted(result.keys()):
             logger.info("  %s = %s", key, str(round(result[key], 4)))
+
+        logger.info("***** Inconsistent results *****")
+        result = test(args, model, tokenizer, 0)
+        for key in sorted(result.keys()):
+            logger.info("  %s = %s", key, str(round(result[key], 4)))
+
+        logger.info("***** All results *****")
+        result = test(args, model, tokenizer)
+        for key in sorted(result.keys()):
+            logger.info("  %s = %s", key, str(round(result[key], 4)))
+
 
     return results
 
