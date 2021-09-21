@@ -73,39 +73,46 @@ class InputFeatures(object):
         self.label = label
 
 
-def _truncate_seq_pair(tokens_a, tokens_b, tokens_c, max_length):
+def _truncate_seq_pair(tokens_a, tokens_b, tokens_c, tokens_d, max_length):
     while True:
-        total_length = len(tokens_a) + len(tokens_b) + len(tokens_c)
-        avg_length = max_length / 3
+        total_length = len(tokens_a) + len(tokens_b) + len(tokens_c) + len(tokens_d)
+        bigger_length, smaller_length = max_length * 0.3, max_length * 0.2
         if total_length <= max_length:
             break
-        if len(tokens_a) > avg_length:
+        if len(tokens_a) > bigger_length:
             tokens_a.pop()
-        if len(tokens_b) > avg_length:
+        if len(tokens_b) > smaller_length:
             tokens_b.pop()
-        if len(tokens_c) > avg_length:
+        if len(tokens_c) > smaller_length:
             tokens_c.pop()
+        if len(tokens_d) > bigger_length:
+            tokens_d.pop()
 
 
 def convert_examples_to_features(js, tokenizer, args):
     # source
     ins1_precode = " ".join(js["ins1PreCode"].split())
-    ins1_curcode = " ".join(js["ins1CurCode"].split())
+    ins1_delcode = " ".join(js["ins1DelCode"].split())
+    ins1_addcode = " ".join(js["ins1AddCode"].split())
     ins2_precode = " ".join(js["ins2PreCode"].split())
     ins1_precode_tokens = tokenizer.tokenize(ins1_precode)
-    ins1_curcode_tokens = tokenizer.tokenize(ins1_curcode)
+    ins1_delcode_tokens = tokenizer.tokenize(ins1_delcode)
+    ins1_addcode_tokens = tokenizer.tokenize(ins1_addcode)
     ins2_precode_tokens = tokenizer.tokenize(ins2_precode)
     _truncate_seq_pair(
         ins1_precode_tokens,
-        ins1_curcode_tokens,
+        ins1_delcode_tokens,
+        ins1_addcode_tokens,
         ins2_precode_tokens,
-        args.block_size - 4,
+        args.block_size - 5,
     )
     source_tokens = (
         [tokenizer.cls_token]
         + ins1_precode_tokens
         + [tokenizer.sep_token]
-        + ins1_curcode_tokens
+        + ins1_delcode_tokens
+        + [tokenizer.sep_token]
+        + ins1_addcode_tokens
         + [tokenizer.sep_token]
         + ins2_precode_tokens
         + [tokenizer.sep_token]
